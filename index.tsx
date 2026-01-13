@@ -254,10 +254,21 @@ export default definePlugin({
       const albumName = trackMetadata.release_name || "Unknown";
       const artistName = trackMetadata.artist_name || "Unknown";
 
+      const requestArtist = await fetch(
+        `https://musicbrainz.org/ws/2/artist/?query=${encodeURIComponent(artistName)}&fmt=json`,
+      );
+
+      if (!requestArtist.ok) throw `${requestArtist.status} ${requestArtist.statusText}`;
+
+      const requestArtistJSON = await requestArtist.json();
+      const Artist = requestArtistJSON.artists || [];
+
+      let artistNameMB = Artist[0].name;
+
       const mbRes = await fetch(
         `https://musicbrainz.org/ws/2/release/?query=
-          release:${encodeURIComponent(albumName)}%20AND%20
-          artist:${encodeURIComponent(artistName)}&fmt=json`,
+          release:${encodeURIComponent(albumName)}&
+          artist:${encodeURIComponent(artistNameMB)}&fmt=json`,
       );
 
       if (!mbRes.ok) throw `${mbRes.status} ${mbRes.statusText}`;
