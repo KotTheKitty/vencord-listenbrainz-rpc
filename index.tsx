@@ -90,8 +90,7 @@ const settings = definePluginSettings({
   },
   mbContact: {
     description: "ListenBrainz contact",
-    type: OptionType.STRING,
-    default: "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0",
+    type: OptionType.STRING
   },
   shareUsername: {
     description:
@@ -182,11 +181,6 @@ const settings = definePluginSettings({
     description: "Show ListenBrainz logo on album art",
     type: OptionType.BOOLEAN,
     default: true,
-  },
-  debugMessages: {
-    description: "Show some debug messages in console",
-    type: OptionType.BOOLEAN,
-    default: false,
   }
 });
 
@@ -200,10 +194,6 @@ export default definePlugin({
     {
       id: 130388483494641664n,
       name: "qouesm",
-    },
-    {
-      id: 1306472600536612884n,
-      name: "kot :3"
     },
   ],
 
@@ -280,7 +270,7 @@ export default definePlugin({
         const mbRes = await fetch(
           `https://musicbrainz.org/ws/2/release/?query=
             release:${encodeURIComponent(albumName)}%20AND%20
-            artist:${encodeURIComponent(artistName)}&fmt=json`,
+            artist:${encodeURIComponent(artistNameMB)}&fmt=json`,
         );
 
         if (!mbRes.ok) throw `${mbRes.status} ${mbRes.statusText}`;
@@ -289,24 +279,16 @@ export default definePlugin({
         const releases = mbJson.releases || [];
 
         releaseGroup = releases[0]["release-group"].id;
-        if (settings.store.debugMessages) {
-        logger.info("Searched ", releaseGroup) }
-      }
+        }
       else {
         releaseGroup = trackMetadata.additional_info.release_group_mbid
-        if (settings.store.debugMessages) {
-        logger.info("Simply set ", releaseGroup) }
       }
       
       if (typeof trackMetadata.additional_info.release_mbid == typeof "") {
         release = trackMetadata.additional_info.release_mbid
-        if (settings.store.debugMessages) {
-        logger.info("Release found, prefer instead: ", release) }
         const caarRes = await fetch(
           `https://coverartarchive.org/release/${release}`,
         );
-        if (settings.store.debugMessages) {
-        logger.info("link is ", caarRes) }
         if (caarRes.ok) {
           caarJson = await caarRes.json();
           url = caarJson.release;
@@ -317,8 +299,6 @@ export default definePlugin({
         const caaRes = await fetch(
         `https://coverartarchive.org/release-group/${releaseGroup}`,
         );
-        if (settings.store.debugMessages) {
-        logger.info("link is ", caaRes) }
         if (caaRes.ok) {
           caaJson = await caaRes.json();
           url = caaJson.release;
@@ -406,13 +386,13 @@ export default definePlugin({
 
     if (settings.store.shareUsername)
       buttons.push({
-        label: "listenbrainz profile :3",
+        label: "ListenBrainz Profile",
         url: `https://www.listenbrainz.org/user/${settings.store.username}`,
       });
 
     if (settings.store.shareSong && trackData.url.length > 0)
       buttons.push({
-        label: "view the song owo",
+        label: "View Song",
         url: trackData.url,
       });
 
