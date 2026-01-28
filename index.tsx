@@ -263,33 +263,59 @@ export default definePlugin({
       const requestArtistJSON = await requestArtist.json();
       const Artist = requestArtistJSON.artists || [];
 
+      let releaseGroup: string = "";
+      let release: string = "";
       let artistNameMB = Artist[0].name;
-
-      const mbRes = await fetch(
-        `https://musicbrainz.org/ws/2/release/?query=
-          release:${encodeURIComponent(albumName)}%20AND%20
-          artist:${encodeURIComponent(artistNameMB)}&fmt=json`,
-      );
-
-      if (!mbRes.ok) throw `${mbRes.status} ${mbRes.statusText}`;
-
-      const mbJson = await mbRes.json();
-      const releases = mbJson.releases || [];
-
-      let releaseGroup = releases.length? releases[0]["release-group"].id : "Unknown release group";
       let caaJson = {};
+      let caarJson = {};
       let url = "";
       let images = [];
+      
+      if (typeof trackMetadata.additional_info.release_group_mbid !== typeof "") {
+        const mbRes = await fetch(
+          `https://musicbrainz.org/ws/2/release/?query=
+            release:${encodeURIComponent(albumName)}%20AND%20
+            artist:${encodeURIComponent(artistName)}&fmt=json`,
+        );
 
-      const caaRes = await fetch(
-        `https://coverartarchive.org/release-group/${releaseGroup}`,
-      );
-      if (caaRes.ok) {
-        caaJson = await caaRes.json();
-        url = caaJson.release;  
-        images = caaJson["images"];
+        if (!mbRes.ok) throw `${mbRes.status} ${mbRes.statusText}`;
+
+        const mbJson = await mbRes.json();
+        const releases = mbJson.releases || [];
+
+        releaseGroup = releases[0]["release-group"].id;
+        logger.info("Searched ", releaseGroup)
+      }
+      else {
+        releaseGroup = trackMetadata.additional_info.release_group_mbid
+        logger.info("Simply set ", releaseGroup)
       }
       
+      if (typeof trackMetadata.additional_info.release_mbid == typeof "") {
+        release = trackMetadata.additional_info.release_mbid
+        logger.info("Release found, prefer instead: ", release)
+        const caarRes = await fetch(
+          `https://coverartarchive.org/release/${release}`,
+        );
+        logger.info("link is ", caarRes)
+        if (caarRes.ok) {
+          caarJson = await caarRes.json();
+          url = caarJson.release;
+          images = caarJson["images"];
+        }
+      }
+      else {
+        const caaRes = await fetch(
+        `https://coverartarchive.org/release-group/${releaseGroup}`,
+        );
+        logger.info("link is ", caaRes)
+        if (caaRes.ok) {
+          caaJson = await caaRes.json();
+          url = caaJson.release;
+          images = caaJson["images"];
+        }
+      }
+
       let imageUrl: string = "";
       for (const image of images) {
         imageUrl = image["thumbnails"]? image["thumbnails"].large || "" :  "";
