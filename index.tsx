@@ -197,7 +197,7 @@ export default definePlugin({
       name: "qouesm",
     },
     {
-      id: 1306472600536612884,
+      id: 1306472600536612884n,
       name: "kot :3"
     },
   ],
