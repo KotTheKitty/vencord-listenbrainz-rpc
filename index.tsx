@@ -222,7 +222,7 @@ export default definePlugin({
     this.updatePresence();
     this.updateInterval = setInterval(() => {
       this.updatePresence();
-    }, 12000);
+    }, 15000);
   },
 
   stop() {
@@ -267,7 +267,7 @@ export default definePlugin({
 
       const mbRes = await fetch(
         `https://musicbrainz.org/ws/2/release/?query=
-          release:${encodeURIComponent(albumName)}&
+          release:${encodeURIComponent(albumName)}%20AND%20
           artist:${encodeURIComponent(artistNameMB)}&fmt=json`,
       );
 
