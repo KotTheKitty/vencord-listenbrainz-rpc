@@ -183,6 +183,11 @@ const settings = definePluginSettings({
     type: OptionType.BOOLEAN,
     default: true,
   },
+  debugMessages: {
+    description: "Show some debug messages in console",
+    type: OptionType.BOOLEAN,
+    default: false,
+  }
 });
 
 var currentRecordingMBID = "";
@@ -284,20 +289,24 @@ export default definePlugin({
         const releases = mbJson.releases || [];
 
         releaseGroup = releases[0]["release-group"].id;
-        logger.info("Searched ", releaseGroup)
+        if (settings.store.debugMessages) {
+        logger.info("Searched ", releaseGroup) }
       }
       else {
         releaseGroup = trackMetadata.additional_info.release_group_mbid
-        logger.info("Simply set ", releaseGroup)
+        if (settings.store.debugMessages) {
+        logger.info("Simply set ", releaseGroup) }
       }
       
       if (typeof trackMetadata.additional_info.release_mbid == typeof "") {
         release = trackMetadata.additional_info.release_mbid
-        logger.info("Release found, prefer instead: ", release)
+        if (settings.store.debugMessages) {
+        logger.info("Release found, prefer instead: ", release) }
         const caarRes = await fetch(
           `https://coverartarchive.org/release/${release}`,
         );
-        logger.info("link is ", caarRes)
+        if (settings.store.debugMessages) {
+        logger.info("link is ", caarRes) }
         if (caarRes.ok) {
           caarJson = await caarRes.json();
           url = caarJson.release;
@@ -308,7 +317,8 @@ export default definePlugin({
         const caaRes = await fetch(
         `https://coverartarchive.org/release-group/${releaseGroup}`,
         );
-        logger.info("link is ", caaRes)
+        if (settings.store.debugMessages) {
+        logger.info("link is ", caaRes) }
         if (caaRes.ok) {
           caaJson = await caaRes.json();
           url = caaJson.release;
